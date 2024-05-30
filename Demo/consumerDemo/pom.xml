@@ -9,7 +9,7 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>providerDemo</artifactId>
+    <artifactId>consumerDemo</artifactId>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -18,17 +18,17 @@
     </properties>
 
     <dependencies>
-        <!--依赖api声明文件-->
         <dependency>
             <groupId>com.hzzxn</groupId>
             <artifactId>apiDemo</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
-        <!--依赖HRPCframework-->
+
         <dependency>
             <groupId>com.hzzxn</groupId>
             <artifactId>HRpcCore</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
+
 </project>

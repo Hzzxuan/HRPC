@@ -5,16 +5,25 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.hzzxn</groupId>
-        <artifactId>Demo</artifactId>
+        <artifactId>HRPC</artifactId>
         <version>1.0-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>clientDemo</artifactId>
+    <artifactId>HRpcCore</artifactId>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.hzzxn</groupId>
+            <artifactId>HRpcCommon</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 
 </project>

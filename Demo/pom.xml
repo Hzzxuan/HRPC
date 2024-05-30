@@ -12,7 +12,7 @@
     <artifactId>Demo</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>clientDemo</module>
+        <module>consumerDemo</module>
         <module>providerDemo</module>
         <module>apiDemo</module>
     </modules>
