@@ -25,7 +25,9 @@ public class ZookeeperUtils {
             CountDownLatch countDownLatch = new CountDownLatch(1);
             ZooKeeper zooKeeper = new ZooKeeper(Constant.DEFAULT_ZK_CONNECT,Constant.TIME_OUT, event -> {
                 if (event.getState() == Watcher.Event.KeeperState.SyncConnected){
-                    System.out.println("客户端连接成功");
+                    if(log.isDebugEnabled()){
+                        log.debug("客户端连接成功");
+                    }
                     countDownLatch.countDown();
                 }
             });
@@ -48,7 +50,9 @@ public class ZookeeperUtils {
             CountDownLatch countDownLatch = new CountDownLatch(1);
             ZooKeeper zooKeeper = new ZooKeeper(connectString,timeout,event -> {
                 if (event.getState() == Watcher.Event.KeeperState.SyncConnected){
-                    System.out.println("客户端连接成功");
+                    if(log.isDebugEnabled()){
+                        log.debug("客户端连接成功");
+                    }
                     countDownLatch.countDown();
                 }
             });
