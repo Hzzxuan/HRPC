@@ -1,6 +1,7 @@
 package com.hzzx;
 
 
+import com.hzzx.channelHandler.inboundHandler.MessageDecoder;
 import com.hzzx.discovery.RegistryConfig;
 import com.hzzx.utils.ZookeeperNode;
 import com.hzzx.utils.ZookeeperUtils;
@@ -11,6 +12,8 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.zookeeper.ZooKeeper;
 
@@ -109,7 +112,9 @@ public class HBootstrap {
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
-                            socketChannel.pipeline().addLast(new SimpleChannelInboundHandler<>() {
+                            socketChannel.pipeline().addLast(new LoggingHandler(LogLevel.DEBUG))
+                                    //.addLast(new MessageDecoder())
+                                    .addLast(new SimpleChannelInboundHandler<>() {
                                 @Override
                                 protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
                                     ByteBuf byteBuf = (ByteBuf) msg;

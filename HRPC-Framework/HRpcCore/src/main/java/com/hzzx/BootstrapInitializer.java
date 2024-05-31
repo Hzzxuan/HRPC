@@ -29,7 +29,7 @@ public class BootstrapInitializer {
     private static final EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
 
     static {
-        //服务端启动辅助类
+        //服务调用端启动辅助类
         bootstrap = bootstrap.group(eventLoopGroup)
                 .channel(NioSocketChannel.class)
                 .handler(new ConsumerChannelInitializer());
