@@ -112,16 +112,9 @@ public class HBootstrap {
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
-                            socketChannel.pipeline().addLast(new LoggingHandler(LogLevel.DEBUG))
-                                    //.addLast(new MessageDecoder())
-                                    .addLast(new SimpleChannelInboundHandler<>() {
-                                @Override
-                                protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
-                                    ByteBuf byteBuf = (ByteBuf) msg;
-                                    log.info("byteBuf-->{}",byteBuf.toString(StandardCharsets.UTF_8));
-                                    ctx.channel().writeAndFlush(Unpooled.copiedBuffer("hello I am server".getBytes()));
-                                }
-                            });
+                            socketChannel.pipeline()
+                                    .addLast(new LoggingHandler(LogLevel.DEBUG))
+                                    .addLast(new MessageDecoder());
                         }
                     });
             ChannelFuture channelFuture = serverBootstrap.bind(8099).sync();

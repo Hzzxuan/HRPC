@@ -35,11 +35,12 @@ public class MessageDecoder extends LengthFieldBasedFrameDecoder {
         super(  //最大帧长度
                 MessageConstant.MAX_FRAME_LENGTH,
                 //报文总长度的index
-                MessageConstant.MAGIC_LENGTH+MessageConstant.VERSION_LENGTH+MessageConstant.HEAD_LEN_LENGTH,
+                MessageConstant.MAGIC.length+MessageConstant.VERSION_LENGTH+MessageConstant.HEAD_LEN_LENGTH,
                 //长度所占位宽
                 MessageConstant.FULL_FIELD_LENGTH,
                 //负载的适应长度,这里fullLenth后跟的就是具体报文，因此把其前面的都减掉，具体见LengthFieldBasedFrameDecoder文档
-                -(MessageConstant.MAGIC_LENGTH+MessageConstant.VERSION_LENGTH+MessageConstant.HEAD_LEN_LENGTH+MessageConstant.FULL_FIELD_LENGTH)
+                -(MessageConstant.MAGIC.length+MessageConstant.VERSION_LENGTH
+                        +MessageConstant.HEAD_LEN_LENGTH+MessageConstant.FULL_FIELD_LENGTH)
                 , 0);
 
     }
@@ -55,7 +56,7 @@ public class MessageDecoder extends LengthFieldBasedFrameDecoder {
     }
 
     private Object decodeFrame(ByteBuf byteBuf) {
-        byte[] magic = new byte[MessageConstant.MAGIC_LENGTH];
+        byte[] magic = new byte[MessageConstant.MAGIC.length];
         byteBuf.readBytes(magic);
         for (int i = 0; i < magic.length; i++) {
             if(magic[i]!=MessageConstant.MAGIC[i]){
@@ -95,7 +96,6 @@ public class MessageDecoder extends LengthFieldBasedFrameDecoder {
         } catch (IOException | ClassNotFoundException e) {
             log.error("请求【{}】序列化时发生错误",requestId,e);
         }
-
         return rpcRequest;
 
     }

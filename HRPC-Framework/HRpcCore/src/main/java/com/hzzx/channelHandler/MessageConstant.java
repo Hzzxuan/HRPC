@@ -6,7 +6,7 @@ package com.hzzx.channelHandler;
  */
 public class MessageConstant {
     public static final byte[] MAGIC = "HRPC".getBytes();
-    public static final byte VERSION = (byte) 1;
+    public static final byte VERSION = 1;
 
     public static final short HEAD_LEN = (byte)(MAGIC.length + 1 + 2 +4 + 1 + 1 + 1 + 8);
     public static final int MAX_FRAME_LENGTH = 1024*1024;

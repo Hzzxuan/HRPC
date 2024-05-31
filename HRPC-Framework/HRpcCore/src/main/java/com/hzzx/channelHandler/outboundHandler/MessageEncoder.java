@@ -6,6 +6,7 @@ import com.hzzx.message.RpcRequest;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -38,25 +39,28 @@ import java.io.ObjectOutputStream;
  * 1B compress
  * 8B requestId
  */
+@Slf4j
 public class MessageEncoder extends MessageToByteEncoder<RpcRequest> {
     @Override
     protected void encode(ChannelHandlerContext ctx, RpcRequest rpcRequest, ByteBuf byteBuf) throws Exception {
         byteBuf.writeBytes(MessageConstant.MAGIC);
         byteBuf.writeByte(MessageConstant.VERSION);
         byteBuf.writeShort(MessageConstant.HEAD_LEN);
-        byteBuf.writerIndex(byteBuf.writerIndex()+4);
+        byteBuf.writerIndex(byteBuf.writerIndex()+MessageConstant.FULL_FIELD_LENGTH);
         //byteBuf.writeInt(MessageConstant.FULL_LEN);
         byteBuf.writeByte(rpcRequest.getRequestType());
         byteBuf.writeByte(rpcRequest.getSerializeType());
         byteBuf.writeByte(rpcRequest.getCompressType());
-        byteBuf.writeLong(rpcRequest.getTimeStamp());
+        byteBuf.writeLong(rpcRequest.getRequestId());
         byte[] bodyBytes = getBodyBytes(rpcRequest.getRequestLoad());
         byteBuf.writeBytes(bodyBytes);
         int index = byteBuf.writerIndex();
-        byteBuf.writerIndex(7);
-        byteBuf.writeLong(MessageConstant.HEAD_LEN + bodyBytes.length);
+        byteBuf.writerIndex(MessageConstant.MAGIC.length+MessageConstant.VERSION_LENGTH+MessageConstant.HEAD_LEN_LENGTH);
+        byteBuf.writeInt(MessageConstant.HEAD_LEN + bodyBytes.length);
         byteBuf.writerIndex(index);
-
+        if (log.isDebugEnabled()) {
+            log.debug("请求【{}】已经完成报文的编码。", rpcRequest.getRequestId());
+        }
     }
 
     private byte[] getBodyBytes(RequestLoad requestLoad) {

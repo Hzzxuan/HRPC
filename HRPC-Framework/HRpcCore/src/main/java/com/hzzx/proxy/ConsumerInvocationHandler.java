@@ -61,7 +61,7 @@ public class ConsumerInvocationHandler implements InvocationHandler {
                 .compressType((byte) 1)
                 .serializeType((byte) 1)
                 .requestType((byte) 1)
-                .timeStamp(System.currentTimeMillis())
+                //.timeStamp(System.currentTimeMillis())
                 .requestLoad(requestLoad)
                 .build();
 
