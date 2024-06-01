@@ -5,6 +5,7 @@ import com.hzzx.channelHandler.inboundHandler.RequestMessageDecoder;
 import com.hzzx.channelHandler.inboundHandler.MethodCallHandler;
 import com.hzzx.channelHandler.outboundHandler.ResponseMessageEncoder;
 import com.hzzx.discovery.RegistryConfig;
+import com.hzzx.utils.IdGenerator;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -32,6 +33,7 @@ public class HBootstrap {
     private String applicationName;
     private RegistryConfig registryConfig;
     private ProtocalConfig protocalConfig;
+    public static final IdGenerator ID_GENERATOR= new IdGenerator(0,1);
 
     public static final Map<String,ServiceConfig<?>> SERVICE_LIST = new ConcurrentHashMap<>(16);
 

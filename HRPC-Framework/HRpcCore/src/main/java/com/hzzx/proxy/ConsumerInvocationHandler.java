@@ -8,7 +8,6 @@ import com.hzzx.enumeration.RequestType;
 import com.hzzx.exceptions.NetworkException;
 import com.hzzx.message.RequestLoad;
 import com.hzzx.message.RpcRequest;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
-import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -58,7 +56,8 @@ public class ConsumerInvocationHandler implements InvocationHandler {
                 .parametersValue(args)
                 .returnType(method.getReturnType())
                 .build();
-        RpcRequest rpcRequest = RpcRequest.builder().requestId(1L)
+        long randomId = HBootstrap.ID_GENERATOR.getId();
+        RpcRequest rpcRequest = RpcRequest.builder().requestId(randomId)
                 .compressType((byte) 1)
                 .serializeType((byte) 1)
                 .requestType(RequestType.REQUEST.getId())
@@ -89,7 +88,7 @@ public class ConsumerInvocationHandler implements InvocationHandler {
         );
         //writeAndFlush方法发送后，直接调用complete，future得到的只是发出去的动作，需要得到对端的通知才能complete
         //将completableFuture暴露出去，等待对端发送回结果通知Future，在handler结束时执行。
-        HBootstrap.PENDING_FUTURE.put(1L,completableFuture);
+        HBootstrap.PENDING_FUTURE.put(randomId,completableFuture);
 
         return completableFuture.get(3, TimeUnit.SECONDS);
     }
