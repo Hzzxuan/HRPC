@@ -1,6 +1,7 @@
 package com.hzzx.channelHandler.outboundHandler;
 
 import com.hzzx.channelHandler.MessageConstant;
+import com.hzzx.enumeration.RequestType;
 import com.hzzx.message.RequestLoad;
 import com.hzzx.message.RpcRequest;
 import io.netty.buffer.ByteBuf;
@@ -52,6 +53,16 @@ public class MessageEncoder extends MessageToByteEncoder<RpcRequest> {
         byteBuf.writeByte(rpcRequest.getSerializeType());
         byteBuf.writeByte(rpcRequest.getCompressType());
         byteBuf.writeLong(rpcRequest.getRequestId());
+
+        //如果是心跳请求，不添加请求体，处理总长度
+        if(rpcRequest.getRequestType() == RequestType.HEART_BEAT.getId()){
+            int index = byteBuf.writerIndex();
+            byteBuf.writerIndex(MessageConstant.MAGIC.length+MessageConstant.VERSION_LENGTH+MessageConstant.HEAD_LEN_LENGTH);
+            byteBuf.writeInt(MessageConstant.HEAD_LEN);
+            byteBuf.writerIndex(index);
+            return;
+        }
+
         byte[] bodyBytes = getBodyBytes(rpcRequest.getRequestLoad());
         byteBuf.writeBytes(bodyBytes);
         int index = byteBuf.writerIndex();

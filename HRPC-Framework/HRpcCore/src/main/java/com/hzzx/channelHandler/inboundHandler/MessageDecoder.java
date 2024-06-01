@@ -1,6 +1,7 @@
 package com.hzzx.channelHandler.inboundHandler;
 
 import com.hzzx.channelHandler.MessageConstant;
+import com.hzzx.enumeration.RequestType;
 import com.hzzx.message.RequestLoad;
 import com.hzzx.message.RpcRequest;
 import io.netty.buffer.ByteBuf;
@@ -79,6 +80,11 @@ public class MessageDecoder extends LengthFieldBasedFrameDecoder {
         byte compressType = byteBuf.readByte();
         //请求Id
         long requestId = byteBuf.readLong();
+
+        if(requestType == RequestType.HEART_BEAT.getId()){
+            return null;
+        }
+
         RpcRequest rpcRequest = new RpcRequest();
         rpcRequest.setRequestType(requestType);
         rpcRequest.setSerializeType(serializeType);

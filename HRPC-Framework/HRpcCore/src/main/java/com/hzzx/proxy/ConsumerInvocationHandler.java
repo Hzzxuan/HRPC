@@ -4,6 +4,7 @@ import com.hzzx.BootstrapInitializer;
 import com.hzzx.HBootstrap;
 import com.hzzx.discovery.Registry;
 import com.hzzx.discovery.RegistryConfig;
+import com.hzzx.enumeration.RequestType;
 import com.hzzx.exceptions.NetworkException;
 import com.hzzx.message.RequestLoad;
 import com.hzzx.message.RpcRequest;
@@ -60,7 +61,7 @@ public class ConsumerInvocationHandler implements InvocationHandler {
         RpcRequest rpcRequest = RpcRequest.builder().requestId(1L)
                 .compressType((byte) 1)
                 .serializeType((byte) 1)
-                .requestType((byte) 1)
+                .requestType(RequestType.REQUEST.getId())
                 //.timeStamp(System.currentTimeMillis())
                 .requestLoad(requestLoad)
                 .build();

@@ -2,6 +2,7 @@ package com.hzzx;
 
 
 import com.hzzx.channelHandler.inboundHandler.MessageDecoder;
+import com.hzzx.channelHandler.inboundHandler.MethodCallHandler;
 import com.hzzx.discovery.RegistryConfig;
 import com.hzzx.utils.ZookeeperNode;
 import com.hzzx.utils.ZookeeperUtils;
@@ -38,7 +39,7 @@ public class HBootstrap {
     private RegistryConfig registryConfig;
     private ProtocalConfig protocalConfig;
 
-    private static final Map<String,ServiceConfig<?>> SERVICE_LIST = new ConcurrentHashMap<>(16);
+    public static final Map<String,ServiceConfig<?>> SERVICE_LIST = new ConcurrentHashMap<>(16);
 
     public static final Map<InetSocketAddress, Channel> CHANNEL_CACHE = new ConcurrentHashMap<>(16);
 
@@ -114,7 +115,9 @@ public class HBootstrap {
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             socketChannel.pipeline()
                                     .addLast(new LoggingHandler(LogLevel.DEBUG))
-                                    .addLast(new MessageDecoder());
+                                    .addLast(new MessageDecoder())
+                                    .addLast(new MethodCallHandler());
+
                         }
                     });
             ChannelFuture channelFuture = serverBootstrap.bind(8099).sync();
