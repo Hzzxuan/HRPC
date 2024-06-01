@@ -2,8 +2,10 @@ package com.hzzx.channelHandler.inboundHandler;
 
 import com.hzzx.HBootstrap;
 import com.hzzx.ServiceConfig;
+import com.hzzx.enumeration.ResponseCode;
 import com.hzzx.message.RequestLoad;
 import com.hzzx.message.RpcRequest;
+import com.hzzx.message.RpcResponse;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +19,7 @@ import java.lang.reflect.Method;
  */
 @Slf4j
 public class MethodCallHandler extends SimpleChannelInboundHandler<RpcRequest> {
+    private byte code;
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RpcRequest rpcRequest) throws Exception {
         //进行方法调用拿到返回值
@@ -24,9 +27,20 @@ public class MethodCallHandler extends SimpleChannelInboundHandler<RpcRequest> {
         Object result = methodCall(requestLoad);
         //todo
         //封装响应
+        RpcResponse rpcResponse = encodeResponse(rpcRequest,result);
 
         //发送响应
-        ctx.channel().writeAndFlush(result);
+        ctx.channel().writeAndFlush(rpcResponse);
+    }
+
+    private RpcResponse encodeResponse(RpcRequest rpcRequest,Object callResult) {
+        RpcResponse rpcResponse = new RpcResponse();
+        rpcResponse.setRequestId(rpcRequest.getRequestId());
+        rpcResponse.setCompressType(rpcRequest.getCompressType());
+        rpcResponse.setSerializeType(rpcRequest.getSerializeType());
+        rpcResponse.setCallResult(callResult);
+        rpcResponse.setCode(code);
+        return rpcResponse;
     }
 
     private Object methodCall(RequestLoad requestLoad) {
@@ -41,8 +55,14 @@ public class MethodCallHandler extends SimpleChannelInboundHandler<RpcRequest> {
         try {
             method = targetClass.getMethod(methodName, parametersType);
             Object callResult = method.invoke(ref, parametersValue);
+            this.code = ResponseCode.SUCCESS.getCode();
             return callResult;
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+        } catch (NoSuchMethodException | InvocationTargetException e) {
+            this.code = ResponseCode.FAIL.getCode();
+            log.error("调用服务【{}】方法【{}】时发生异常",interfaceName,methodName);
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            this.code = ResponseCode.ILLEGALACCESS.getCode();
             log.error("调用服务【{}】方法【{}】时发生异常",interfaceName,methodName);
             throw new RuntimeException(e);
         }

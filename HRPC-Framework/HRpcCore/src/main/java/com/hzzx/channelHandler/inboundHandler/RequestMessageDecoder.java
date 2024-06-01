@@ -6,12 +6,10 @@ import com.hzzx.message.RequestLoad;
 import com.hzzx.message.RpcRequest;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
-import java.util.List;
 
 /**
  * @author : HuangZx
@@ -30,9 +28,9 @@ import java.util.List;
  * 报文格式如上所示
  */
 @Slf4j
-public class MessageDecoder extends LengthFieldBasedFrameDecoder {
+public class RequestMessageDecoder extends LengthFieldBasedFrameDecoder {
 
-    public MessageDecoder() {
+    public RequestMessageDecoder() {
         super(  //最大帧长度
                 MessageConstant.MAX_FRAME_LENGTH,
                 //报文总长度的index
@@ -66,7 +64,7 @@ public class MessageDecoder extends LengthFieldBasedFrameDecoder {
         }
         byte version = byteBuf.readByte();
         if(version!=MessageConstant.VERSION){
-            throw new RuntimeException("版本号不匹配 ");
+            throw new RuntimeException("请求的版本号不匹配 ");
         }
         //报文头长度
         short headLength = byteBuf.readShort();

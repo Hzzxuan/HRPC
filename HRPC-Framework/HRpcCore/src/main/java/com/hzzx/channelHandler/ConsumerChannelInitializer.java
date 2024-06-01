@@ -1,9 +1,9 @@
 package com.hzzx.channelHandler;
 
+import com.hzzx.channelHandler.inboundHandler.CallBackHandler;
 import com.hzzx.channelHandler.inboundHandler.MysimpleTest;
-import com.hzzx.channelHandler.outboundHandler.MessageEncoder;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+import com.hzzx.channelHandler.inboundHandler.ResponseMessageDecoder;
+import com.hzzx.channelHandler.outboundHandler.RequestMessageEncoder;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.logging.LogLevel;
@@ -19,7 +19,9 @@ public class ConsumerChannelInitializer extends ChannelInitializer<SocketChannel
     protected void initChannel(SocketChannel ch) throws Exception {
         ch.pipeline()
                 .addLast(new LoggingHandler(LogLevel.DEBUG))
-                .addLast(new MessageEncoder())
-                .addLast(new MysimpleTest());
+                .addLast(new RequestMessageEncoder())
+                .addLast(new ResponseMessageDecoder())
+                .addLast(new CallBackHandler());
+
     }
 }

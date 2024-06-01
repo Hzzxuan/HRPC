@@ -3,7 +3,7 @@ package com.hzzx.channelHandler.outboundHandler;
 import com.hzzx.channelHandler.MessageConstant;
 import com.hzzx.enumeration.RequestType;
 import com.hzzx.message.RequestLoad;
-import com.hzzx.message.RpcRequest;
+import com.hzzx.message.RpcResponse;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
@@ -15,13 +15,12 @@ import java.io.ObjectOutputStream;
 
 /**
  * @author : HuangZx
- * @date : 2024/5/31 11:15
+ * @date : 2024/6/1 15:02
  */
-
 /**
  * 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   21   22
  * +----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
- * |    magic          |ver |head  len|    full length    | qt | ser|comp|              RequestId                |
+ * |    magic          |ver |head  len|    full length    | cd | ser|comp|              RequestId                |
  * +-----+-----+-------+----+----+----+----+-----------+----- ---+--------+----+----+----+----+----+----+---+---+
  * |                                                                                                             |
  * |                                         body                                                                |
@@ -35,54 +34,53 @@ import java.io.ObjectOutputStream;
  * 1B version
  * 2B head Len
  * 4B full Len
- * 1B qt
+ * 1B code
  * 1B serialize
  * 1B compress
  * 8B requestId
  */
 @Slf4j
-public class MessageEncoder extends MessageToByteEncoder<RpcRequest> {
+public class ResponseMessageEncoder extends MessageToByteEncoder<RpcResponse> {
     @Override
-    protected void encode(ChannelHandlerContext ctx, RpcRequest rpcRequest, ByteBuf byteBuf) throws Exception {
+    protected void encode(ChannelHandlerContext ctx, RpcResponse rpcResponse, ByteBuf byteBuf) throws Exception {
         byteBuf.writeBytes(MessageConstant.MAGIC);
         byteBuf.writeByte(MessageConstant.VERSION);
         byteBuf.writeShort(MessageConstant.HEAD_LEN);
         byteBuf.writerIndex(byteBuf.writerIndex()+MessageConstant.FULL_FIELD_LENGTH);
         //byteBuf.writeInt(MessageConstant.FULL_LEN);
-        byteBuf.writeByte(rpcRequest.getRequestType());
-        byteBuf.writeByte(rpcRequest.getSerializeType());
-        byteBuf.writeByte(rpcRequest.getCompressType());
-        byteBuf.writeLong(rpcRequest.getRequestId());
-
-        //如果是心跳请求，不添加请求体，处理总长度
-        if(rpcRequest.getRequestType() == RequestType.HEART_BEAT.getId()){
-            int index = byteBuf.writerIndex();
-            byteBuf.writerIndex(MessageConstant.MAGIC.length+MessageConstant.VERSION_LENGTH+MessageConstant.HEAD_LEN_LENGTH);
-            byteBuf.writeInt(MessageConstant.HEAD_LEN);
-            byteBuf.writerIndex(index);
-            return;
+        byteBuf.writeByte(rpcResponse.getCode());
+        byteBuf.writeByte(rpcResponse.getSerializeType());
+        byteBuf.writeByte(rpcResponse.getCompressType());
+        byteBuf.writeLong(rpcResponse.getRequestId());
+        Object callResult = rpcResponse.getCallResult();
+        byte[] callResultBytes = getBodyBytes(callResult);
+        if(callResultBytes != null){
+            byteBuf.writeBytes(callResultBytes);
         }
-
-        byte[] bodyBytes = getBodyBytes(rpcRequest.getRequestLoad());
-        byteBuf.writeBytes(bodyBytes);
+        int callResultBytesLength = callResultBytes == null ? 0 : callResultBytes.length;
         int index = byteBuf.writerIndex();
         byteBuf.writerIndex(MessageConstant.MAGIC.length+MessageConstant.VERSION_LENGTH+MessageConstant.HEAD_LEN_LENGTH);
-        byteBuf.writeInt(MessageConstant.HEAD_LEN + bodyBytes.length);
+        byteBuf.writeInt(MessageConstant.HEAD_LEN + callResultBytes.length);
         byteBuf.writerIndex(index);
         if (log.isDebugEnabled()) {
-            log.debug("请求【{}】已经完成报文的编码。", rpcRequest.getRequestId());
+            log.debug("响应【{}】已经完成报文的编码。", rpcResponse.getRequestId());
         }
+
     }
 
-    private byte[] getBodyBytes(RequestLoad requestLoad) {
+    private byte[] getBodyBytes(Object object) {
+        if(object == null){
+            return null;
+        }
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ObjectOutputStream objectOutputStream = null;
         try {
             objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
-            objectOutputStream.writeObject(requestLoad);
+            objectOutputStream.writeObject(object);
             return byteArrayOutputStream.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
 }
