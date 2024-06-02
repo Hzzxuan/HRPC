@@ -1,10 +1,8 @@
 package com.hzzx;
 
 import com.hzzx.discovery.RegistryConfig;
-import com.hzzx.service.GreetingService;
 import com.hzzx.service.impl.GreetingServiceImpl;
 
-import static java.lang.Thread.sleep;
 
 /**
  * @author : HuangZx

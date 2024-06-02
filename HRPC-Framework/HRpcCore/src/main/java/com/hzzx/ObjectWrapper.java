@@ -1,4 +1,4 @@
-package com.hzzx.serialize;
+package com.hzzx;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
+//定义为泛型，后续的压缩也要沿用
 public class ObjectWrapper<T> {
     private byte code;
     private T object;

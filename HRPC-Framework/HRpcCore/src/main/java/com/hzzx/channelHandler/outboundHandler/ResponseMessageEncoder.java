@@ -1,6 +1,8 @@
 package com.hzzx.channelHandler.outboundHandler;
 
 import com.hzzx.channelHandler.MessageConstant;
+import com.hzzx.compress.CompressFactory;
+import com.hzzx.compress.Compressor;
 import com.hzzx.enumeration.RequestType;
 import com.hzzx.message.RequestLoad;
 import com.hzzx.message.RpcResponse;
@@ -58,6 +60,9 @@ public class ResponseMessageEncoder extends MessageToByteEncoder<RpcResponse> {
         /**---------------------响应结果序列化-----------------**/
         Serializer serializer = SerializerFactory.getSerializer(rpcResponse.getSerializeType());
         byte[] callResultBytes = serializer.serialize(callResult);
+        /**---------------------响应结果压缩-----------------**/
+        Compressor compressor = CompressFactory.getCompressor(rpcResponse.getCompressType());
+        callResultBytes = compressor.compress(callResultBytes);
         if(callResultBytes != null){
             byteBuf.writeBytes(callResultBytes);
         }

@@ -1,6 +1,8 @@
 package com.hzzx.channelHandler.inboundHandler;
 
 import com.hzzx.channelHandler.MessageConstant;
+import com.hzzx.compress.CompressFactory;
+import com.hzzx.compress.Compressor;
 import com.hzzx.enumeration.RequestType;
 import com.hzzx.message.RequestLoad;
 import com.hzzx.message.RpcRequest;
@@ -95,7 +97,9 @@ public class RequestMessageDecoder extends LengthFieldBasedFrameDecoder {
         int RpcLoadLength = fullLength - headLength;
         byte[] RpcLoad = new byte[RpcLoadLength];
         byteBuf.readBytes(RpcLoad);
-        //得到报文体，进行报文体的反序列化
+        //得到报文体，进行报文体的解压缩和反序列化
+        Compressor compressor = CompressFactory.getCompressor(compressType);
+        RpcLoad = compressor.deCompress(RpcLoad);
         Serializer serializer = SerializerFactory.getSerializer(serializeType);
         Object o = serializer.deSerialize(RpcLoad);
         rpcRequest.setRequestLoad((RequestLoad) o);

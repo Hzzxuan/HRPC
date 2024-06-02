@@ -14,6 +14,9 @@ import java.io.*;
 public class JdkSerializer implements Serializer {
     @Override
     public byte[] serialize(Object object) {
+        if(object == null){
+            return null;
+        }
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ObjectOutputStream objectOutputStream = null;
         try {
@@ -28,6 +31,9 @@ public class JdkSerializer implements Serializer {
 
     @Override
     public Object deSerialize(byte[] bytes) {
+        if(bytes == null){
+            return null;
+        }
         try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
              ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);){
             Object object = objectInputStream.readObject();

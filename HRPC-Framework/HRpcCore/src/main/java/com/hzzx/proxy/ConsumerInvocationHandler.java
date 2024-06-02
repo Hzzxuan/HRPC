@@ -2,6 +2,7 @@ package com.hzzx.proxy;
 
 import com.hzzx.BootstrapInitializer;
 import com.hzzx.HBootstrap;
+import com.hzzx.compress.CompressFactory;
 import com.hzzx.discovery.Registry;
 import com.hzzx.discovery.RegistryConfig;
 import com.hzzx.enumeration.RequestType;
@@ -37,8 +38,6 @@ public class ConsumerInvocationHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        //log.info("method:{}", method.getName());
-        //log.info("args:{}", args);
         //consumer端需要去注册中心找到需要的服务。传入的是method和args
         Registry registry = registryConfig.getRegistry();
         //查找注册中心，得到可用节点，返回ip+端口
@@ -59,9 +58,9 @@ public class ConsumerInvocationHandler implements InvocationHandler {
                 .build();
         long randomId = HBootstrap.ID_GENERATOR.getId();
         RpcRequest rpcRequest = RpcRequest.builder().requestId(randomId)
-                .compressType((byte) 1)
+                .compressType(CompressFactory.getCompressorWrapper("gzip").getCode())
                 //后续将"jdk"写在配置类中，
-                .serializeType(SerializerFactory.getSerializerWrapper("jdk").getCode())
+                .serializeType(SerializerFactory.getSerializerWrapper("hessian").getCode())
                 .requestType(RequestType.REQUEST.getId())
                 //.timeStamp(System.currentTimeMillis())
                 .requestLoad(requestLoad)

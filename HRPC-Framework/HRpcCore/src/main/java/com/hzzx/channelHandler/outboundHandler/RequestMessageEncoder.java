@@ -1,6 +1,8 @@
 package com.hzzx.channelHandler.outboundHandler;
 
 import com.hzzx.channelHandler.MessageConstant;
+import com.hzzx.compress.CompressFactory;
+import com.hzzx.compress.Compressor;
 import com.hzzx.enumeration.RequestType;
 import com.hzzx.message.RequestLoad;
 import com.hzzx.message.RpcRequest;
@@ -70,6 +72,8 @@ public class RequestMessageEncoder extends MessageToByteEncoder<RpcRequest> {
         Serializer serializer = SerializerFactory.getSerializer(rpcRequest.getSerializeType());
         byte[] bodyBytes = serializer.serialize(requestLoad);
         /**-------------------------进行报文压缩-------------------------**/
+        Compressor compressor = CompressFactory.getCompressor(rpcRequest.getCompressType());
+        bodyBytes = compressor.compress(bodyBytes);
 
         byteBuf.writeBytes(bodyBytes);
         int index = byteBuf.writerIndex();

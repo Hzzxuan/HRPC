@@ -1,6 +1,8 @@
 package com.hzzx.channelHandler.inboundHandler;
 
 import com.hzzx.channelHandler.MessageConstant;
+import com.hzzx.compress.CompressFactory;
+import com.hzzx.compress.Compressor;
 import com.hzzx.enumeration.RequestType;
 import com.hzzx.enumeration.ResponseCode;
 import com.hzzx.message.RequestLoad;
@@ -11,6 +13,7 @@ import com.hzzx.serialize.SerializerFactory;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.compression.CompressionException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayInputStream;
@@ -81,14 +84,16 @@ public class ResponseMessageDecoder extends LengthFieldBasedFrameDecoder {
         rpcResponse.setSerializeType(serializeType);
         rpcResponse.setCompressType(compressType);
         rpcResponse.setRequestId(requestId);
-        //报文体
+        //得到报文体，进行报文体的解压缩、反序列化
         int callResultLength = fullLength - headLength;
         byte[] callResultBytes = new byte[callResultLength];
         byteBuf.readBytes(callResultBytes);
+        Compressor compressor = CompressFactory.getCompressor(compressType);
+        callResultBytes = compressor.deCompress(callResultBytes);
         Serializer serializer = SerializerFactory.getSerializer(serializeType);
         Object callResult = serializer.deSerialize(callResultBytes);
         rpcResponse.setCallResult(callResult);
-        //得到报文体，进行报文体的反序列化
+
         /*
         try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(callResultBytes);
              ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);)
