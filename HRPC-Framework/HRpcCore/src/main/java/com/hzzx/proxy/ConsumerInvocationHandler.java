@@ -8,6 +8,7 @@ import com.hzzx.enumeration.RequestType;
 import com.hzzx.exceptions.NetworkException;
 import com.hzzx.message.RequestLoad;
 import com.hzzx.message.RpcRequest;
+import com.hzzx.serialize.SerializerFactory;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import lombok.extern.slf4j.Slf4j;
@@ -59,7 +60,8 @@ public class ConsumerInvocationHandler implements InvocationHandler {
         long randomId = HBootstrap.ID_GENERATOR.getId();
         RpcRequest rpcRequest = RpcRequest.builder().requestId(randomId)
                 .compressType((byte) 1)
-                .serializeType((byte) 1)
+                //后续将"jdk"写在配置类中，
+                .serializeType(SerializerFactory.getSerializerWrapper("jdk").getCode())
                 .requestType(RequestType.REQUEST.getId())
                 //.timeStamp(System.currentTimeMillis())
                 .requestLoad(requestLoad)

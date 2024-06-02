@@ -4,6 +4,8 @@ import com.hzzx.channelHandler.MessageConstant;
 import com.hzzx.enumeration.RequestType;
 import com.hzzx.message.RequestLoad;
 import com.hzzx.message.RpcResponse;
+import com.hzzx.serialize.Serializer;
+import com.hzzx.serialize.SerializerFactory;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
@@ -53,14 +55,16 @@ public class ResponseMessageEncoder extends MessageToByteEncoder<RpcResponse> {
         byteBuf.writeByte(rpcResponse.getCompressType());
         byteBuf.writeLong(rpcResponse.getRequestId());
         Object callResult = rpcResponse.getCallResult();
-        byte[] callResultBytes = getBodyBytes(callResult);
+        /**---------------------响应结果序列化-----------------**/
+        Serializer serializer = SerializerFactory.getSerializer(rpcResponse.getSerializeType());
+        byte[] callResultBytes = serializer.serialize(callResult);
         if(callResultBytes != null){
             byteBuf.writeBytes(callResultBytes);
         }
         int callResultBytesLength = callResultBytes == null ? 0 : callResultBytes.length;
         int index = byteBuf.writerIndex();
         byteBuf.writerIndex(MessageConstant.MAGIC.length+MessageConstant.VERSION_LENGTH+MessageConstant.HEAD_LEN_LENGTH);
-        byteBuf.writeInt(MessageConstant.HEAD_LEN + callResultBytes.length);
+        byteBuf.writeInt(MessageConstant.HEAD_LEN + callResultBytesLength);
         byteBuf.writerIndex(index);
         if (log.isDebugEnabled()) {
             log.debug("响应【{}】已经完成报文的编码。", rpcResponse.getRequestId());

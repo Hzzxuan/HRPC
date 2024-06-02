@@ -4,6 +4,8 @@ import com.hzzx.channelHandler.MessageConstant;
 import com.hzzx.enumeration.RequestType;
 import com.hzzx.message.RequestLoad;
 import com.hzzx.message.RpcRequest;
+import com.hzzx.serialize.Serializer;
+import com.hzzx.serialize.SerializerFactory;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
@@ -63,7 +65,12 @@ public class RequestMessageEncoder extends MessageToByteEncoder<RpcRequest> {
             return;
         }
 
-        byte[] bodyBytes = getBodyBytes(rpcRequest.getRequestLoad());
+        /**--------------------------进行报文序列化-----------------------**/
+        RequestLoad requestLoad = rpcRequest.getRequestLoad();
+        Serializer serializer = SerializerFactory.getSerializer(rpcRequest.getSerializeType());
+        byte[] bodyBytes = serializer.serialize(requestLoad);
+        /**-------------------------进行报文压缩-------------------------**/
+
         byteBuf.writeBytes(bodyBytes);
         int index = byteBuf.writerIndex();
         byteBuf.writerIndex(MessageConstant.MAGIC.length+MessageConstant.VERSION_LENGTH+MessageConstant.HEAD_LEN_LENGTH);
@@ -74,6 +81,7 @@ public class RequestMessageEncoder extends MessageToByteEncoder<RpcRequest> {
         }
     }
 
+    /*
     private byte[] getBodyBytes(RequestLoad requestLoad) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ObjectOutputStream objectOutputStream = null;
@@ -84,5 +92,5 @@ public class RequestMessageEncoder extends MessageToByteEncoder<RpcRequest> {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
+    }*/
 }

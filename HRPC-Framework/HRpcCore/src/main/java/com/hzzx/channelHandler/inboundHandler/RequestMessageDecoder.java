@@ -4,6 +4,9 @@ import com.hzzx.channelHandler.MessageConstant;
 import com.hzzx.enumeration.RequestType;
 import com.hzzx.message.RequestLoad;
 import com.hzzx.message.RpcRequest;
+import com.hzzx.serialize.Impl.JdkSerializer;
+import com.hzzx.serialize.Serializer;
+import com.hzzx.serialize.SerializerFactory;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
@@ -93,6 +96,10 @@ public class RequestMessageDecoder extends LengthFieldBasedFrameDecoder {
         byte[] RpcLoad = new byte[RpcLoadLength];
         byteBuf.readBytes(RpcLoad);
         //得到报文体，进行报文体的反序列化
+        Serializer serializer = SerializerFactory.getSerializer(serializeType);
+        Object o = serializer.deSerialize(RpcLoad);
+        rpcRequest.setRequestLoad((RequestLoad) o);
+        /*
         try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(RpcLoad);
              ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);){
             RequestLoad requestLoad = (RequestLoad) objectInputStream.readObject();
@@ -100,6 +107,8 @@ public class RequestMessageDecoder extends LengthFieldBasedFrameDecoder {
         } catch (IOException | ClassNotFoundException e) {
             log.error("请求【{}】序列化时发生错误",requestId,e);
         }
+
+         */
         return rpcRequest;
 
     }
