@@ -1,6 +1,7 @@
 package com.hzzx.discovery.Impl;
 
 import com.hzzx.Constant;
+import com.hzzx.HBootstrap;
 import com.hzzx.ServiceConfig;
 import com.hzzx.discovery.Registry;
 import com.hzzx.exceptions.NetworkException;
@@ -43,7 +44,7 @@ public class ZookeeperRegistry implements Registry {
         // 服务提供方的端口自己设定
         // ip为一个局域网ip，不是环回地址,也不是ipv6
         //todo: 后续处理端口的问题
-        String tempNode = parentPath + "/" + NetUtils.getIp()+":" +8099;
+        String tempNode = parentPath + "/" + NetUtils.getIp()+":" + HBootstrap.port;
         if(!ZookeeperUtils.exists(zooKeeper,tempNode,null)){
             ZookeeperNode zookeeperNode = new ZookeeperNode(tempNode,null);
             ZookeeperUtils.createZookeeperNode(zooKeeper, zookeeperNode, null, CreateMode.EPHEMERAL);
@@ -56,7 +57,7 @@ public class ZookeeperRegistry implements Registry {
     }
 
     @Override
-    public InetSocketAddress lookup(String serviceName) {
+    public List<InetSocketAddress> lookup(String serviceName) {
         String servicePath = Constant.ZK_PROVIDER_PATH+"/"+serviceName;
         if(!ZookeeperUtils.exists(zooKeeper,servicePath,null)){
             log.info("查询不到{}服务",serviceName);
@@ -69,6 +70,6 @@ public class ZookeeperRegistry implements Registry {
         if(addresses.isEmpty() || (addresses.size() == 0)){
             throw new NetworkException();
         }
-        return addresses.get(0);
+        return addresses;
     }
 }

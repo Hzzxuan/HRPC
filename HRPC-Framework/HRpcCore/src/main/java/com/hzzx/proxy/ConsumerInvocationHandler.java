@@ -38,15 +38,6 @@ public class ConsumerInvocationHandler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        //consumer端需要去注册中心找到需要的服务。传入的是method和args
-        Registry registry = registryConfig.getRegistry();
-        //查找注册中心，得到可用节点，返回ip+端口
-        InetSocketAddress address = registry.lookup(interfaceRef.getName());
-        if(log.isDebugEnabled()){
-            log.info("服务调用方，发现了服务【{}】可用主机{}",interfaceRef.getName(),address);
-        }
-        //启动客户端netty服务,得到一条channel
-        Channel channel = getAvailableChannel(address);
 
         /**-------------------------封装请求报文-------------------------*/
         RequestLoad requestLoad = RequestLoad.builder()
@@ -65,6 +56,22 @@ public class ConsumerInvocationHandler implements InvocationHandler {
                 //.timeStamp(System.currentTimeMillis())
                 .requestLoad(requestLoad)
                 .build();
+
+        HBootstrap.REQUEST_THREAD_LOCAL.set(rpcRequest);
+
+        //consumer端需要去注册中心找到需要的服务。传入的是method和args
+        Registry registry = registryConfig.getRegistry();
+        //查找注册中心，得到可用节点，返回ip+端口
+        //todo:实现负载均衡策略，
+        InetSocketAddress address = HBootstrap.getInstance().getLoadBalancer().chooseServiceAddress(interfaceRef.getName());
+        //InetSocketAddress address = registry.lookup(interfaceRef.getName()).get(0);
+        if(log.isDebugEnabled()){
+            log.info("服务调用方，发现了服务【{}】可用主机{}",interfaceRef.getName(),address);
+        }
+        //启动客户端netty服务,得到一条channel
+        Channel channel = getAvailableChannel(address);
+
+
 
         /**-------------------------同步策略-------------------------
          ChannelFuture channelFuture = channel.writeAndFlush(new Object()).await();

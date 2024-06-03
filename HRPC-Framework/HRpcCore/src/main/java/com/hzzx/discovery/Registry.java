@@ -3,6 +3,7 @@ package com.hzzx.discovery;
 import com.hzzx.ServiceConfig;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 
 /**
  * @author : HuangZx
@@ -21,5 +22,5 @@ public interface Registry {
      * @return
      */
 
-    InetSocketAddress lookup(String serviceName);
+    List<InetSocketAddress> lookup(String serviceName);
 }

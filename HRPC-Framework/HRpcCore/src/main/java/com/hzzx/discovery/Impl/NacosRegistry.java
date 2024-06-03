@@ -5,6 +5,7 @@ import com.hzzx.discovery.Registry;
 import com.hzzx.utils.ZookeeperUtils;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 
 /**
  * @author : HuangZx
@@ -23,7 +24,7 @@ public class NacosRegistry implements Registry {
     }
 
     @Override
-    public InetSocketAddress lookup(String serviceName) {
+    public List<InetSocketAddress> lookup(String serviceName) {
         return null;
     }
 }

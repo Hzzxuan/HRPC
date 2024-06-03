@@ -5,6 +5,9 @@ import com.hzzx.channelHandler.inboundHandler.RequestMessageDecoder;
 import com.hzzx.channelHandler.inboundHandler.MethodCallHandler;
 import com.hzzx.channelHandler.outboundHandler.ResponseMessageEncoder;
 import com.hzzx.discovery.RegistryConfig;
+import com.hzzx.loadbalance.Impl.RoundRobinLoadBalancer;
+import com.hzzx.loadbalance.LoadBalancer;
+import com.hzzx.message.RpcRequest;
 import com.hzzx.utils.IdGenerator;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -33,6 +36,11 @@ public class HBootstrap {
     private String applicationName;
     private RegistryConfig registryConfig;
     private ProtocalConfig protocalConfig;
+    public static ThreadLocal<RpcRequest> REQUEST_THREAD_LOCAL = new ThreadLocal<>();
+
+    private LoadBalancer loadBalancer;
+
+    public static final int port = 8101;
     public static final IdGenerator ID_GENERATOR= new IdGenerator(0,1);
 
     public static final Map<String,ServiceConfig<?>> SERVICE_LIST = new ConcurrentHashMap<>(16);
@@ -63,6 +71,8 @@ public class HBootstrap {
      */
     public HBootstrap registry(RegistryConfig registryConfig) {
         this.registryConfig = registryConfig;
+        //todo:写这里不合适后续调整
+        this.loadBalancer= (LoadBalancer) new RoundRobinLoadBalancer(this.registryConfig.getRegistry());
         return this;
     }
 
@@ -117,7 +127,7 @@ public class HBootstrap {
 
                         }
                     });
-            ChannelFuture channelFuture = serverBootstrap.bind(8099).sync();
+            ChannelFuture channelFuture = serverBootstrap.bind(HBootstrap.port).sync();
             channelFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -138,5 +148,9 @@ public class HBootstrap {
 
     public void reference(ReferenceConfig<?> reference) {
         reference.setRegistryConfig(registryConfig);
+    }
+
+    public LoadBalancer getLoadBalancer() {
+        return loadBalancer;
     }
 }

@@ -8,7 +8,7 @@ import com.hzzx.service.impl.GreetingServiceImpl;
  * @author : HuangZx
  * @date : 2024/5/28 14:44
  */
-public class Application {
+public class providerApplication {
     public static void main(String[] args) {
         //定义具体的服务
         ServiceConfig<HelloRPC> serviceConfig = new ServiceConfig<>();
