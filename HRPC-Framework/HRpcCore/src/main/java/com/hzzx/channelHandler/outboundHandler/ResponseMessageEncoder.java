@@ -57,6 +57,7 @@ public class ResponseMessageEncoder extends MessageToByteEncoder<RpcResponse> {
         byteBuf.writeByte(rpcResponse.getCompressType());
         byteBuf.writeLong(rpcResponse.getRequestId());
         Object callResult = rpcResponse.getCallResult();
+
         /**---------------------响应结果序列化-----------------**/
         Serializer serializer = SerializerFactory.getSerializer(rpcResponse.getSerializeType());
         byte[] callResultBytes = serializer.serialize(callResult);

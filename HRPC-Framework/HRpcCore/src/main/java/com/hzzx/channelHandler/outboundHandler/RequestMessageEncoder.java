@@ -64,6 +64,9 @@ public class RequestMessageEncoder extends MessageToByteEncoder<RpcRequest> {
             byteBuf.writerIndex(MessageConstant.MAGIC.length+MessageConstant.VERSION_LENGTH+MessageConstant.HEAD_LEN_LENGTH);
             byteBuf.writeInt(MessageConstant.HEAD_LEN);
             byteBuf.writerIndex(index);
+            if (log.isDebugEnabled()) {
+                log.debug("心跳请求【{}】已经完成报文的编码。", rpcRequest.getRequestId());
+            }
             return;
         }
 
@@ -81,7 +84,7 @@ public class RequestMessageEncoder extends MessageToByteEncoder<RpcRequest> {
         byteBuf.writeInt(MessageConstant.HEAD_LEN + bodyBytes.length);
         byteBuf.writerIndex(index);
         if (log.isDebugEnabled()) {
-            log.debug("请求【{}】已经完成报文的编码。", rpcRequest.getRequestId());
+            log.debug("正常请求【{}】已经完成报文的编码。", rpcRequest.getRequestId());
         }
     }
 

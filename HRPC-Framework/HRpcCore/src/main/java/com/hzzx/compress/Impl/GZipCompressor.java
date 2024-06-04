@@ -15,6 +15,9 @@ import java.util.zip.GZIPOutputStream;
 public class GZipCompressor implements Compressor {
     @Override
     public byte[] compress(byte[] bytes) {
+        if(bytes == null){
+            return null;
+        }
         try(ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream);
             ){
@@ -29,6 +32,9 @@ public class GZipCompressor implements Compressor {
 
     @Override
     public byte[] deCompress(byte[] bytes) {
+        if(bytes == null){
+            return null;
+        }
         try(ByteArrayInputStream byteArrayinputStream = new ByteArrayInputStream(bytes);
             GZIPInputStream gzipInputStream = new GZIPInputStream(byteArrayinputStream);
         ){

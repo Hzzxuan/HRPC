@@ -84,15 +84,19 @@ public class RequestMessageDecoder extends LengthFieldBasedFrameDecoder {
         //请求Id
         long requestId = byteBuf.readLong();
 
-        if(requestType == RequestType.HEART_BEAT.getId()){
-            return null;
-        }
+        //if(requestType == RequestType.HEART_BEAT.getId()){
+        ///    return null;
+        //}
 
         RpcRequest rpcRequest = new RpcRequest();
         rpcRequest.setRequestType(requestType);
         rpcRequest.setSerializeType(serializeType);
         rpcRequest.setCompressType(compressType);
         rpcRequest.setRequestId(requestId);
+        if(requestType == RequestType.HEART_BEAT.getId()){
+            log.debug("接收到心跳请求，跳过报文处理");
+            return rpcRequest;
+        }
         //报文体
         int RpcLoadLength = fullLength - headLength;
         byte[] RpcLoad = new byte[RpcLoadLength];

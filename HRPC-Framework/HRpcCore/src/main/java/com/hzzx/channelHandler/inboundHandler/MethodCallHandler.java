@@ -24,7 +24,14 @@ public class MethodCallHandler extends SimpleChannelInboundHandler<RpcRequest> {
     protected void channelRead0(ChannelHandlerContext ctx, RpcRequest rpcRequest) throws Exception {
         //进行方法调用拿到返回值
         RequestLoad requestLoad = rpcRequest.getRequestLoad();
-        Object result = methodCall(requestLoad);
+        Object result = null;
+        if(requestLoad==null){
+            this.code = ResponseCode.SUCCESS.getCode();
+            RpcResponse rpcResponse = encodeResponse(rpcRequest, null);
+            ctx.channel().writeAndFlush(rpcResponse);
+            return;
+        }
+        result = methodCall(requestLoad);
         //todo
         //封装响应
         RpcResponse rpcResponse = encodeResponse(rpcRequest,result);

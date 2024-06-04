@@ -19,8 +19,7 @@ import io.netty.handler.logging.LoggingHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -35,6 +34,8 @@ public class HBootstrap {
     private static final HBootstrap hBootstrap = new HBootstrap();
     private String applicationName;
     private RegistryConfig registryConfig;
+
+
     private ProtocalConfig protocalConfig;
     public static ThreadLocal<RpcRequest> REQUEST_THREAD_LOCAL = new ThreadLocal<>();
 
@@ -47,6 +48,7 @@ public class HBootstrap {
 
     public static final Map<InetSocketAddress, Channel> CHANNEL_CACHE = new ConcurrentHashMap<>(16);
 
+    public static final Map<String,SortedMap<Long,Channel>> ANSWER_TIME_CHANNEL_CACHE = new HashMap<>();
     public static final Map<Long, CompletableFuture<Object>> PENDING_FUTURE = new ConcurrentHashMap<>(128);
     /**
      * 得到单例对象
@@ -153,4 +155,8 @@ public class HBootstrap {
     public LoadBalancer getLoadBalancer() {
         return loadBalancer;
     }
+    public RegistryConfig getRegistryConfig() {
+        return registryConfig;
+    }
+
 }

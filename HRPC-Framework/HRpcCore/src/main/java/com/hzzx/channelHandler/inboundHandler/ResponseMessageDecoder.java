@@ -84,8 +84,12 @@ public class ResponseMessageDecoder extends LengthFieldBasedFrameDecoder {
         rpcResponse.setSerializeType(serializeType);
         rpcResponse.setCompressType(compressType);
         rpcResponse.setRequestId(requestId);
+
         //得到报文体，进行报文体的解压缩、反序列化
         int callResultLength = fullLength - headLength;
+        if (callResultLength == 0) {
+            return rpcResponse;
+        }
         byte[] callResultBytes = new byte[callResultLength];
         byteBuf.readBytes(callResultBytes);
         Compressor compressor = CompressFactory.getCompressor(compressType);

@@ -24,7 +24,7 @@ public class RpcRequest {
     //序列化类型
     private byte serializeType;
     //时间戳
-    private long timeStamp;
+    //private long timeStamp;
     /*-------------------报文体-----------------*/
     private RequestLoad requestLoad;
 

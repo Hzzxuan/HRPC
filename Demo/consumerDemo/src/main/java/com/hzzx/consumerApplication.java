@@ -1,6 +1,7 @@
 package com.hzzx;
 
 import com.hzzx.discovery.RegistryConfig;
+import com.hzzx.heatBeat.HeartBeatDetect;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -21,10 +22,10 @@ public class consumerApplication {
 
         //使用代理对象
         HelloRPC helloRPC = referenceConfig.get();
-        for (int i = 0; i < 8; i++) {
-            String getResult = helloRPC.Hello("hello");
-            log.info("getResult--->{}",getResult);
-        }
+        String getResult = helloRPC.Hello("hello");
+        HeartBeatDetect.start(HelloRPC.class.getName());
+        log.info("getResult--->{}",getResult);
+
 
 
     }
