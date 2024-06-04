@@ -74,9 +74,5 @@ public class RoundRobinLoadBalancer extends AbstractLoadBalancer {
             return serviceList.get(i);
         }
 
-        @Override
-        public void renewBalance() {
-
-        }
     }
 }

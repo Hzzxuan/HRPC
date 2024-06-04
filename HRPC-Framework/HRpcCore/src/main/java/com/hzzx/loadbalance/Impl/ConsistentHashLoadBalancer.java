@@ -62,11 +62,6 @@ public class ConsistentHashLoadBalancer extends AbstractLoadBalancer {
             return hashCircle.get(hash);
         }
 
-        @Override
-        public void renewBalance() {
-
-        }
-
         private void addServiceToHashCircle(InetSocketAddress service) {
             for (int i = 0; i < virtueNodes; i++) {
                 int hash = hash(service.toString()+"-"+i);

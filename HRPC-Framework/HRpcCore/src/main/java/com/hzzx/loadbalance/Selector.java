@@ -9,5 +9,4 @@ import java.util.List;
  */
 public interface Selector {
     InetSocketAddress getNext();
-    void renewBalance();
 }

@@ -11,4 +11,5 @@ import java.util.List;
 public interface LoadBalancer {
     InetSocketAddress chooseServiceAddress(String serviceName);
 
+    void rebalance(String serviceName, List<InetSocketAddress> addresses);
 }

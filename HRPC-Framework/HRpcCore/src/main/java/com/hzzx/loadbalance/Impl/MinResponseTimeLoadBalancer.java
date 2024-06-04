@@ -18,32 +18,52 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @date : 2024/6/4 16:00
  */
 @Slf4j
-public class MinResponseTimeLoadBalancer implements LoadBalancer {
+public class MinResponseTimeLoadBalancer extends AbstractLoadBalancer {
     //维护的是Map<ServiceName,SortedMap>
+    private String serviceName;
     private Registry registry;
 
-
     //todo:registry全局配置
-    public MinResponseTimeLoadBalancer(Registry registry){
+    public MinResponseTimeLoadBalancer(Registry registry,String serviceName){
+        super(registry);
+        this.serviceName = serviceName;
         this.registry = registry;
     }
     @Override
-    public InetSocketAddress chooseServiceAddress(String serviceName){
-        SortedMap<Long, Channel> channelSortedMap = HBootstrap.ANSWER_TIME_CHANNEL_CACHE.get(serviceName);
-        if(!channelSortedMap.isEmpty()){
-            log.debug("返回一最小响应结果");
-            return (InetSocketAddress) channelSortedMap.get(channelSortedMap.firstKey()).remoteAddress();
-        }
-        else {
-            log.debug("无最小响应结果，返回默认");
-            List<InetSocketAddress> serviceList = registry.lookup(serviceName);
-            if(serviceList.isEmpty() || serviceList == null){
-                log.error("无可用服务节点");
-                //todo 自定义exception表示
-                throw new RuntimeException();
-            }
-            return serviceList.get(0);
-        }
+    protected Selector getSelector(List<InetSocketAddress> serviceList) {
+        return new MinimumResponseTimeSelector(serviceName,registry);
     }
 
+    private static class MinimumResponseTimeSelector implements Selector {
+
+        public MinimumResponseTimeSelector(List<InetSocketAddress> serviceList) {
+
+        }
+        public MinimumResponseTimeSelector(String serviceName,Registry registry) {
+            this.serviceName = serviceName;
+            this.registry = registry;
+        }
+        private String serviceName;
+        private Registry registry;
+        @Override
+        public InetSocketAddress getNext() {
+            SortedMap<Long, Channel> channelSortedMap = HBootstrap.ANSWER_TIME_CHANNEL_CACHE.get(serviceName);
+            if(!channelSortedMap.isEmpty()){
+                log.debug("返回一最小响应结果");
+                return (InetSocketAddress) channelSortedMap.get(channelSortedMap.firstKey()).remoteAddress();
+            }
+            else {
+                log.debug("无最小响应结果，返回默认");
+                List<InetSocketAddress> serviceList = registry.lookup(serviceName);
+                if(serviceList.isEmpty() || serviceList == null){
+                    log.error("无可用服务节点");
+                    //todo 自定义exception表示
+                    throw new RuntimeException();
+                }
+                return serviceList.get(0);
+            }
+
+        }
+
+    }
 }
