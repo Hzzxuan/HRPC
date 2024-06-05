@@ -1,6 +1,7 @@
 package com.hzzx;
 
 
+import com.hzzx.annotation.HRpcSupply;
 import com.hzzx.channelHandler.inboundHandler.RequestMessageDecoder;
 import com.hzzx.channelHandler.inboundHandler.MethodCallHandler;
 import com.hzzx.channelHandler.outboundHandler.ResponseMessageEncoder;
@@ -18,10 +19,14 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static java.lang.Thread.sleep;
 
@@ -92,7 +97,7 @@ public class HBootstrap {
      * 向注册中心注册服务
      * @return
      */
-    public HBootstrap publish(ServiceConfig<?> service) {
+    public  HBootstrap publish(ServiceConfig<?> service) {
         //获取注册中心信息并注册服务
         registryConfig.getRegistry().registry(service);
         //维护映射关系 方法名<--->服务
@@ -106,8 +111,102 @@ public class HBootstrap {
      * @return
      */
     public HBootstrap publish(List<ServiceConfig> serviceList) {
+        serviceList.forEach(service->{
+            //获取注册中心信息并注册服务
+            registryConfig.getRegistry().registry(service);
+            //维护映射关系 方法名<--->服务
+            SERVICE_LIST.put(service.getInterface().getName(),service);
+        });
         return this;
     }
+
+    public HBootstrap scan(String packageName){
+        // 1、需要通过packageName获取其下的所有的类的权限定名称
+        List<String> allClassNames = getAllClassNames(packageName);
+        //通过反射获得接口，构建具体实现
+        List<Class<?>> classList = allClassNames.stream().map(classname -> {
+                    try {
+                        return Class.forName(classname);
+                    } catch (ClassNotFoundException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).filter(clazz -> clazz.getAnnotation(HRpcSupply.class) != null)
+                .collect(Collectors.toList());
+        for(Class<?> clazz : classList){
+            //一个类可能实现了多个接口
+            Class<?>[] interfaces = clazz.getInterfaces();
+            Object instance = null;
+            try {
+                instance = clazz.getConstructor().newInstance();
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                     NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+            for(Class<?> ifc : interfaces){
+                //发布
+                ServiceConfig<?> serviceConfig = new ServiceConfig<>();
+                serviceConfig.setInterface(ifc);
+                serviceConfig.setRef(instance);
+                if (log.isDebugEnabled()){
+                    log.debug("--------通过包扫描，将服务【{}】发布.",ifc);
+                }
+                publish(serviceConfig);
+            }
+
+        }
+        return this;
+    }
+
+    public static List<String> getAllClassNames(String packageName) {
+        String basePath = packageName.replaceAll("\\.","/");
+        URL url = ClassLoader.getSystemClassLoader().getResource(basePath);
+        if(url == null){
+            log.error("包扫描时找不到包路径");
+            throw  new RuntimeException();
+        }
+        String absolutePath = url.getPath();
+        List<String> classNames = new ArrayList<>();
+        recursionFile(absolutePath,classNames,basePath);
+        return classNames;
+    }
+
+    private static List<String> recursionFile(String absolutePath, List<String> classNames, String basePath) {
+        File file = new File(absolutePath);
+        if(file.isFile()){
+            // 文件 --> 类的权限定名称
+            String className = getClassNameByAbsolutePath(absolutePath,basePath);
+            classNames.add(className);
+            return classNames;
+        }else if(file.isDirectory()){
+            File[] children = file.listFiles(pathname -> pathname.isDirectory() || pathname.getPath().contains(".class"));
+            if(children == null || children.length == 0){
+                return classNames;
+            }
+            for (File child : children){
+                recursionFile(child.getAbsolutePath(),classNames,basePath);
+            }
+        }
+        return classNames;
+    }
+
+    private static String getClassNameByAbsolutePath(String absolutePath, String basePath) {
+        String fileName = absolutePath
+                .substring(absolutePath.indexOf(basePath.replaceAll("/","\\\\")))
+                .replaceAll("\\\\",".");
+
+        fileName = fileName.substring(0,fileName.indexOf(".class"));
+        return fileName;
+    }
+
+
+    public static void main(String[] args) {
+        String bashPath = "com/hzzx";
+        String abPath = ClassLoader.getSystemClassLoader().getResource(bashPath).getPath();
+        List<String> list = new ArrayList<>();
+        System.out.println(recursionFile(abPath,list,bashPath));
+
+    }
+
     public void start() {
         //服务端开启netty进行通信
         EventLoopGroup bossGroup = new NioEventLoopGroup(2);

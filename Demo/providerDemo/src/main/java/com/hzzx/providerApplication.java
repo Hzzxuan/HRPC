@@ -21,7 +21,8 @@ public class providerApplication {
                 .application("xxx-provider")
                 .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
                 .protocal(new ProtocalConfig("jdk"))
-                .publish(serviceConfig)
+                //.publish(serviceConfig)
+                .scan("com.hzzx")
                 .start();
 
     }
