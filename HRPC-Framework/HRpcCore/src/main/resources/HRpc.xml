@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+
+    <port>8099</port>
+    <appName>default-appName</appName>
+    <registry url="zookeeper://127.0.0.1:2181"/>
+    <!-- 二选一 -->
+    <serializeType type="hessian"/>
+    <serializer code="3" name="hession" class="com.hzzx.serialize.Impl.HessianSerializer"/>
+    <!-- 二选一 -->
+    <compressType type="gzip"/>
+    <compressor code="1" name="gzip"  class="com.hzzx.compress.Impl.GZipCompressor"/>
+    <!-- 二选一 -->
+    <loadBalancer class="com.hzzx.loadbalance.Impl.MinResponseTimeLoadBalancer"/>
+    <loadBalancerType type="minResponseTime"/>
+    <idGenerator class="com.hzzx.utils.IdGenerator" dataCenterId="2" MachineId="4"/>
+
+</configuration>
