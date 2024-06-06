@@ -5,6 +5,7 @@ import com.hzzx.annotation.HRpcSupply;
 import com.hzzx.channelHandler.inboundHandler.RequestMessageDecoder;
 import com.hzzx.channelHandler.inboundHandler.MethodCallHandler;
 import com.hzzx.channelHandler.outboundHandler.ResponseMessageEncoder;
+import com.hzzx.config.Configuration;
 import com.hzzx.discovery.RegistryConfig;
 import com.hzzx.loadbalance.Impl.RoundRobinLoadBalancer;
 import com.hzzx.loadbalance.LoadBalancer;
@@ -37,17 +38,15 @@ import static java.lang.Thread.sleep;
 @Slf4j
 public class HBootstrap {
     private static final HBootstrap hBootstrap = new HBootstrap();
-    private String applicationName;
-    private RegistryConfig registryConfig;
 
+    private final Configuration configuration;
+    public Configuration getConfiguration() {
+        return configuration;
+    }
 
-    private ProtocalConfig protocalConfig;
     public static ThreadLocal<RpcRequest> REQUEST_THREAD_LOCAL = new ThreadLocal<>();
 
-    private LoadBalancer loadBalancer;
 
-    public static final int port = 8101;
-    public static final IdGenerator ID_GENERATOR= new IdGenerator(0,1);
 
     public static final Map<String,ServiceConfig<?>> SERVICE_LIST = new ConcurrentHashMap<>(16);
 
@@ -55,6 +54,11 @@ public class HBootstrap {
 
     public static final Map<String,SortedMap<Long,Channel>> ANSWER_TIME_CHANNEL_CACHE = new HashMap<>();
     public static final Map<Long, CompletableFuture<Object>> PENDING_FUTURE = new ConcurrentHashMap<>(128);
+
+    //构造方法private
+    private HBootstrap(){
+        this.configuration = new Configuration();
+    }
     /**
      * 得到单例对象
      * @return
@@ -68,7 +72,7 @@ public class HBootstrap {
      * @return
      */
     public HBootstrap application(String name) {
-        this.applicationName = name;
+        configuration.setApplicationName(name);
         return this;
     }
 
@@ -77,29 +81,43 @@ public class HBootstrap {
      * @return
      */
     public HBootstrap registry(RegistryConfig registryConfig) {
-        this.registryConfig = registryConfig;
+        configuration.setRegistryConfig(registryConfig);
         //todo:写这里不合适后续调整
-        this.loadBalancer= (LoadBalancer) new RoundRobinLoadBalancer(this.registryConfig.getRegistry());
+        //this.loadBalancer= (LoadBalancer) new RoundRobinLoadBalancer(this.registryConfig.getRegistry());
         return this;
     }
 
     /**
-     * 配置序列化协议
-     * @param protocalConfig
-     * @return
+     * 配置序列化的方式
+     * @param serializeType 序列化的方式
      */
-    public HBootstrap protocal(ProtocalConfig protocalConfig) {
-        this.protocalConfig = protocalConfig;
+    public HBootstrap serialize(String serializeType) {
+        configuration.setSerializeType(serializeType);
+        if (log.isDebugEnabled()) {
+            log.debug("我们配置了使用的序列化的方式为【{}】.", serializeType);
+        }
         return this;
     }
 
+    public HBootstrap compress(String compressType) {
+        configuration.setCompressType(compressType);
+        if (log.isDebugEnabled()) {
+            log.debug("我们配置了使用的压缩算法为【{}】.", compressType);
+        }
+        return this;
+    }
+
+    public HBootstrap loadBalancer(LoadBalancer loadBalancer) {
+        configuration.setLoadBalancer(loadBalancer);
+        return this;
+    }
     /**
      * 向注册中心注册服务
      * @return
      */
     public  HBootstrap publish(ServiceConfig<?> service) {
         //获取注册中心信息并注册服务
-        registryConfig.getRegistry().registry(service);
+        configuration.getRegistryConfig().getRegistry().registry(service);
         //维护映射关系 方法名<--->服务
         SERVICE_LIST.put(service.getInterface().getName(),service);
         return this;
@@ -113,7 +131,7 @@ public class HBootstrap {
     public HBootstrap publish(List<ServiceConfig> serviceList) {
         serviceList.forEach(service->{
             //获取注册中心信息并注册服务
-            registryConfig.getRegistry().registry(service);
+            configuration.getRegistryConfig().getRegistry().registry(service);
             //维护映射关系 方法名<--->服务
             SERVICE_LIST.put(service.getInterface().getName(),service);
         });
@@ -228,7 +246,7 @@ public class HBootstrap {
 
                         }
                     });
-            ChannelFuture channelFuture = serverBootstrap.bind(HBootstrap.port).sync();
+            ChannelFuture channelFuture = serverBootstrap.bind(configuration.getPort()).sync();
             channelFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -248,14 +266,14 @@ public class HBootstrap {
      */
 
     public void reference(ReferenceConfig<?> reference) {
-        reference.setRegistryConfig(registryConfig);
+        reference.setRegistryConfig(configuration.getRegistryConfig());
     }
 
     public LoadBalancer getLoadBalancer() {
-        return loadBalancer;
+        return configuration.getLoadBalancer();
     }
     public RegistryConfig getRegistryConfig() {
-        return registryConfig;
+        return configuration.getRegistryConfig();
     }
 
 }

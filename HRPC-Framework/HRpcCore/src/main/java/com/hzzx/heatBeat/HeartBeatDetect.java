@@ -75,7 +75,7 @@ public class HeartBeatDetect {
                 int tryTimes = 3;
                 while (tryTimes > 0){
                     //构建心跳检测报文
-                    long randomId = HBootstrap.ID_GENERATOR.getId();
+                    long randomId = HBootstrap.getInstance().getConfiguration().getID_GENERATOR().getId();
                     RpcRequest rpcRequest = RpcRequest.builder().requestId(randomId)
                             .compressType(CompressFactory.getCompressorWrapper("gzip").getCode())
                             //后续将"jdk"写在配置类中，

@@ -47,7 +47,7 @@ public class ConsumerInvocationHandler implements InvocationHandler {
                 .parametersValue(args)
                 .returnType(method.getReturnType())
                 .build();
-        long randomId = HBootstrap.ID_GENERATOR.getId();
+        long randomId = HBootstrap.getInstance().getConfiguration().getID_GENERATOR().getId();
         RpcRequest rpcRequest = RpcRequest.builder().requestId(randomId)
                 .compressType(CompressFactory.getCompressorWrapper("gzip").getCode())
                 //后续将"jdk"写在配置类中，

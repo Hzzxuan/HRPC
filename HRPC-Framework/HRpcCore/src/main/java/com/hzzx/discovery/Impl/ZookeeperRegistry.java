@@ -44,7 +44,7 @@ public class ZookeeperRegistry implements Registry {
         // 服务提供方的端口自己设定
         // ip为一个局域网ip，不是环回地址,也不是ipv6
         //todo: 后续处理端口的问题
-        String tempNode = parentPath + "/" + NetUtils.getIp()+":" + HBootstrap.port;
+        String tempNode = parentPath + "/" + NetUtils.getIp()+":" + HBootstrap.getInstance().getConfiguration().getPort();
         if(!ZookeeperUtils.exists(zooKeeper,tempNode,null)){
             ZookeeperNode zookeeperNode = new ZookeeperNode(tempNode,null);
             ZookeeperUtils.createZookeeperNode(zooKeeper, zookeeperNode, null, CreateMode.EPHEMERAL);

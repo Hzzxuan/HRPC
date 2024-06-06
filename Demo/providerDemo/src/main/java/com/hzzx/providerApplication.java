@@ -18,11 +18,11 @@ public class providerApplication {
 
         //启动服务提供 --配置注册中心、压缩方式
         HBootstrap.getInstance()
-                .application("xxx-provider")
+                .application("Hello-provider")
                 .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
-                .protocal(new ProtocalConfig("jdk"))
-                //.publish(serviceConfig)
-                .scan("com.hzzx")
+                //.protocal(new ProtocalConfig("jdk"))
+                .publish(serviceConfig)
+                //.scan("com.hzzx")
                 .start();
 
     }
