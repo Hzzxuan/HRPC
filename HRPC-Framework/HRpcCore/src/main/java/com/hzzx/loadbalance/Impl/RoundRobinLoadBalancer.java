@@ -67,11 +67,12 @@ public class RoundRobinLoadBalancer extends AbstractLoadBalancer {
                 throw new RuntimeException();
             }
             int i = index.get();
-            if(i == serviceList.size()-1){
+            InetSocketAddress address = serviceList.get(i);
+            index.incrementAndGet();
+            if(i >= serviceList.size()-1){
                 index.set(0);
             }
-            index.incrementAndGet();
-            return serviceList.get(i);
+            return address;
         }
 
     }

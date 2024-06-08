@@ -99,4 +99,17 @@ public class CircuitBreaker {
         state = CircuitBreakerState.CLOSED;
         log.debug("熔断器关闭");
     }
+
+    //getter
+    public void incrFailCount() {
+        int count = failCount.incrAndGet();
+    }
+
+    public AtomicInteger getConsecutiveSuccCount() {
+        return consecutiveSuccCount;
+    }
+
+    public CircuitBreakerState getState() {
+        return state;
+    }
 }

@@ -4,6 +4,9 @@ import com.hzzx.discovery.RegistryConfig;
 import com.hzzx.heatBeat.HeartBeatDetect;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 /**
  * @author : HuangZx
  * @date : 2024/5/28 14:42
@@ -22,9 +25,31 @@ public class consumerApplication {
 
         //使用代理对象
         HelloRPC helloRPC = referenceConfig.get();
-        String getResult = helloRPC.Hello("hello");
-        HeartBeatDetect.start(HelloRPC.class.getName());
-        log.info("getResult--->{}",getResult);
+        String getResult = "";
+        for (int i = 0; i < 20; i++) {
+            getResult = helloRPC.Hello("hello");
+            log.info("getResult--->{}",getResult);
+        }
+
+        Timer timer = new Timer();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        String x= "";
+                        for (int i = 0; i < 5; i++) {
+                            x=helloRPC.Hello("hello111");
+                            log.info("getResult--->{}",x);
+                        }
+                    }
+                },3000);
+            }
+        }).start();
+
+
+        //HeartBeatDetect.start(HelloRPC.class.getName());
 
 
 

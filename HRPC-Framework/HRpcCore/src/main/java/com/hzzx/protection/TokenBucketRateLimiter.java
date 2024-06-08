@@ -48,10 +48,10 @@ public class TokenBucketRateLimiter implements RateLimiter{
     public synchronized boolean allowRequest() {
         if(tokens > 0){
             tokens --;
-            System.out.println("请求被放行---------------");
+            System.out.println("------------------------------------------请求被放行---------------");
             return true;
         } else {
-            System.out.println("请求被拦截---------------");
+            System.out.println("------------------------------------------请求被拦截---------------");
             return false;
         }
     }

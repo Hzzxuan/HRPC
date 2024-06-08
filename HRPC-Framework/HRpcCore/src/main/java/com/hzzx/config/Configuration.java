@@ -2,6 +2,8 @@ package com.hzzx.config;
 import com.hzzx.discovery.RegistryConfig;
 import com.hzzx.loadbalance.Impl.RoundRobinLoadBalancer;
 import com.hzzx.loadbalance.LoadBalancer;
+import com.hzzx.protection.CircuitBreaker;
+import com.hzzx.protection.RateLimiter;
 import com.hzzx.utils.IdGenerator;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +20,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.net.SocketAddress;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -43,6 +48,10 @@ public class Configuration {
     public IdGenerator ID_GENERATOR= new IdGenerator(0,1);
     //负载均衡策略
     private LoadBalancer loadBalancer = new RoundRobinLoadBalancer(this.registryConfig.getRegistry());
+    // 为每一个ip配置一个限流器
+    private final Map<SocketAddress, RateLimiter> everyIpRateLimiter = new ConcurrentHashMap<>(16);
+    // 为每一个ip配置一个断路器，熔断
+    private final Map<SocketAddress, CircuitBreaker> everyIpCircuitBreaker = new ConcurrentHashMap<>(16);
 
     public Configuration() {
         XmlResolver xmlResolver = new XmlResolver(this);
